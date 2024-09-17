@@ -21,9 +21,12 @@ import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
 import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
@@ -32,23 +35,31 @@ public class MainActivity extends AppCompatActivity {
 
     private BluetoothAdapter bluetoothAdapter;
     private BluetoothLeScanner bluetoothLeScanner;
+
+    private HashSet<String> addressMap;
     private List<ScanResult> scanResults;
     private BleDeviceAdapter bleDeviceAdapter;
 
     private Handler handler = new Handler();
 
+    private Button btnScan;
+
     private static final String[] PERMISSIONS = {Manifest.permission.BLUETOOTH_SCAN, Manifest.permission.BLUETOOTH_CONNECT, Manifest.permission.ACCESS_FINE_LOCATION};
     private static final int REQUEST_ENABLE_BT = 1;
-    private static final long SCAN_PERIOD = 10000;      // 10 giây
+    private static final int REQUEST_PERMISSION = 2;
+    private static final long SCAN_PERIOD = 30000;      // 30 giây
 
     private final ScanCallback scanCallback = new ScanCallback() {
         @Override
         public void onScanResult(int callbackType, ScanResult result) {
-            if (scanResults == null || bleDeviceAdapter == null) {
+            String deviceAddress = result.getDevice().getAddress();
+            if (ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
                 return;
             }
+            String deviceName = result.getDevice().getName();
 
-            if (!scanResults.contains(result)) {
+            if (!addressMap.contains(deviceAddress) && deviceName!=null){
+                addressMap.add(deviceAddress);
                 scanResults.add(result);
                 bleDeviceAdapter.notifyDataSetChanged();
             }
@@ -63,6 +74,7 @@ public class MainActivity extends AppCompatActivity {
         RecyclerView recyclerView = findViewById(R.id.recycler_view);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
+        addressMap = new HashSet<>();
         scanResults = new ArrayList<>();
         bleDeviceAdapter = new BleDeviceAdapter(scanResults, this);
         recyclerView.setAdapter(bleDeviceAdapter);
@@ -89,7 +101,7 @@ public class MainActivity extends AppCompatActivity {
         // Yêu cầu quyền truy cập BLE
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
             Log.i(TAG, "onCreate: Yêu cầu quyền CONNECT và SCAN.");
-            ActivityCompat.requestPermissions(this, PERMISSIONS, 1);
+            ActivityCompat.requestPermissions(this, PERMISSIONS, REQUEST_PERMISSION);
         }
 
         // Kiểm tra xem Bluetooth có được bật không
@@ -100,18 +112,23 @@ public class MainActivity extends AppCompatActivity {
             startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
         }
 
-        // Bluetooth đã bật, bắt đầu quét
-        Log.i(TAG, "onCreate: BluetoothLE đã được bật.");
+        btnScan = findViewById(R.id.btn_scan);
+        btnScan.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                // bắt đầu quét
+                Log.i(TAG, "onCreate: BluetoothLE đã được bật.");
+                startBleScan();
+            }
+        });
+
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == REQUEST_ENABLE_BT) {
-            if (resultCode == RESULT_OK) {
-                // Người dùng đã bật Bluetooth, bắt đầu quét BLE
-                startBleScan();
-            } else {
+            if (resultCode != RESULT_OK) {
                 // Người dùng từ chối bật Bluetooth, thông báo và thoát ứng dụng
                 Log.w(TAG, "onActivityResult: Bluetooth cần được bật để quét BLE!");
                 Toast.makeText(this, "Bluetooth cần được bật để quét BLE", Toast.LENGTH_SHORT).show();
@@ -128,6 +145,9 @@ public class MainActivity extends AppCompatActivity {
         }
 
         bluetoothLeScanner = bluetoothAdapter.getBluetoothLeScanner();
+
+        btnScan.setText("SCANNING...");
+        btnScan.setEnabled(false);
         Toast.makeText(this, "Bắt đầu quét", Toast.LENGTH_SHORT).show();
         Log.i(TAG, "startBleScan: Bắt đầu quét!");
         bluetoothLeScanner.startScan(scanCallback);
@@ -135,7 +155,7 @@ public class MainActivity extends AppCompatActivity {
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
-                stopBleScan(); // Dừng quét sau 10 giây
+                stopBleScan();
             }
         }, SCAN_PERIOD);
     }
@@ -147,6 +167,8 @@ public class MainActivity extends AppCompatActivity {
             ActivityCompat.requestPermissions(this, PERMISSIONS, 1);
         }
 
+        btnScan.setText("SCAN");
+        btnScan.setEnabled(true);
         Log.i(TAG, "stopBleScan: Dừng quét!");
         Toast.makeText(this, "Dừng quét", Toast.LENGTH_SHORT).show();
         bluetoothLeScanner.stopScan(scanCallback);
@@ -155,10 +177,8 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == 1) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                startBleScan(); // Gọi lại quét BLE nếu quyền được cấp
-            } else {
+        if (requestCode == REQUEST_PERMISSION) {
+            if (grantResults.length <= 0 || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
                 Log.w(TAG, "onRequestPermissionsResult: Quyền BLE bị từ chối");
                 Toast.makeText(this, "Quyền BLE bị từ chối", Toast.LENGTH_SHORT).show();
                 finish();
