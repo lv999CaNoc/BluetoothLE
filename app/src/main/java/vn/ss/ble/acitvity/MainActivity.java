@@ -36,13 +36,15 @@ public class MainActivity extends AppCompatActivity {
     private static final String TAG = "BLE_MainActivity";
     private static final int REQUEST_ENABLE_BT = 1;
     private static final int REQUEST_PERMISSION = 2;
-    private static final long SCAN_PERIOD = 30000;      // 30 giây
+    private static final long SCAN_PERIOD = 10000;      // 10 giây
     private final Handler handler = new Handler();
     private BluetoothAdapter bluetoothAdapter;
     private BluetoothLeScanner bluetoothLeScanner;
     private HashSet<String> addressMap;
     private List<ScanResult> scanResults;
     private BleDeviceAdapter bleDeviceAdapter;
+
+
     private final ScanCallback scanCallback = new ScanCallback() {
         @Override
         public void onScanResult(int callbackType, ScanResult result) {
@@ -154,6 +156,10 @@ public class MainActivity extends AppCompatActivity {
         }
 
         bluetoothLeScanner = bluetoothAdapter.getBluetoothLeScanner();
+
+        addressMap.clear();
+        scanResults.clear();
+//        bleDeviceAdapter.notifyDataSetChanged();
 
         btnScan.setText("SCANNING...");
         btnScan.setEnabled(false);

@@ -22,9 +22,10 @@
         android:layout_height="wrap_content"
         android:text="CONNECT"/>
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recycler_view_services"
+    <ExpandableListView
+        android:id="@+id/expandable_lv_services"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
+        android:layout_height="wrap_content"
+        />
 
 </LinearLayout>

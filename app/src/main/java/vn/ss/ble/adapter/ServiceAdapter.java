@@ -1,105 +1,95 @@
 package vn.ss.ble.adapter;
 
-import android.bluetooth.BluetoothGattCharacteristic;
-import android.bluetooth.BluetoothGattService;
 import android.content.Context;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.LinearLayout;
+import android.widget.BaseExpandableListAdapter;
 import android.widget.TextView;
 
-import androidx.annotation.NonNull;
-import androidx.recyclerview.widget.RecyclerView;
-
+import java.util.HashMap;
 import java.util.List;
-import java.util.UUID;
 
-import vn.ss.ble.R;
+public class ServiceAdapter extends BaseExpandableListAdapter {
 
-public class ServiceAdapter extends RecyclerView.Adapter<ServiceAdapter.ServiceViewHolder> {
-
-    private static final String TAG = "BLE_ServiceAdapter";
-
-    private List<BluetoothGattService> serviceList;
     private Context context;
+    private List<String> listDataHeader;
+    private HashMap<String, List<String>> listDataChild;
 
-    public ServiceAdapter(List<BluetoothGattService> serviceList, Context context) {
-        this.serviceList = serviceList;
+    public ServiceAdapter(Context context, List<String> listDataHeader, HashMap<String, List<String>> listDataChild) {
         this.context = context;
-    }
-
-
-    @NonNull
-    @Override
-    public ServiceViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(context).inflate(R.layout.item_services, parent, false);
-        return new ServiceViewHolder(view);
-
+        this.listDataHeader = listDataHeader;
+        this.listDataChild = listDataChild;
     }
 
     @Override
-    public void onBindViewHolder(@NonNull ServiceViewHolder holder, int position) {
-        BluetoothGattService service = serviceList.get(position);
-        UUID serviceUUID = service.getUuid();
-
-        holder.serviceName.setText("Service: " + serviceUUID.toString());
-
-        // Khi nhấn vào dịch vụ, sẽ hiển thị/ẩn các characteristic của dịch vụ đó
-        holder.itemView.setOnClickListener(view -> {
-            Log.d(TAG, "onBindViewHolder: touch " + serviceUUID);
-            if (holder.characteristicContainer.getVisibility() == View.GONE) {
-                holder.characteristicContainer.setVisibility(View.VISIBLE);
-                displayCharacteristics(service, holder.characteristicContainer);
-            } else {
-                holder.characteristicContainer.setVisibility(View.GONE);
-            }
-        });
-
+    public int getGroupCount() {
+        return listDataHeader.size();
     }
 
-    // Hiển thị các characteristic bên dưới khi nhấn vào dịch vụ
-    private void displayCharacteristics(BluetoothGattService service, LinearLayout container) {
-        container.removeAllViews(); // Xóa tất cả các view cũ trước khi hiển thị mới
+    @Override
+    public int getChildrenCount(int groupPosition) {
+        return listDataChild.get(this.listDataHeader.get(groupPosition)).size();
+    }
 
-        List<BluetoothGattCharacteristic> characteristicList = service.getCharacteristics();
+    @Override
+    public Object getGroup(int groupPosition) {
+        return listDataHeader.get(groupPosition);
+    }
 
-        for (BluetoothGattCharacteristic characteristic : characteristicList) {
-            TextView characteristicView = new TextView(context);
+    @Override
+    public Object getChild(int groupPosition, int childPosition) {
+        return this.listDataChild.get(this.listDataHeader.get(groupPosition)).get(childPosition);
+    }
 
-            UUID characteristicUuid = characteristic.getUuid();
+    @Override
+    public long getGroupId(int groupPosition) {
+        return groupPosition;
+    }
 
-            characteristicView.setText("Characteristic: " + characteristicUuid.toString());
-            characteristicView.setPadding(16, 8, 16, 8);
-            characteristicView.setTextSize(16);
+    @Override
+    public long getChildId(int groupPosition, int childPosition) {
+        return childPosition;
+    }
 
-            // Thêm đặc tính vào container
-            container.addView(characteristicView);
+    @Override
+    public boolean hasStableIds() {
+        return false;
+    }
 
-            // Nếu muốn thêm chức năng nhấn vào characteristic
-            characteristicView.setOnClickListener(v -> {
-                // Thực hiện các thao tác khi người dùng nhấn vào characteristic
-                Log.d(TAG, "displayCharacteristics: touch " + characteristicUuid.toString());
-            });
+    @Override
+    public View getGroupView(int groupPosition, boolean isExpanded, View convertView, ViewGroup parent) {
+        String headerTitle = (String) getGroup(groupPosition);
+        if (convertView == null) {
+            LayoutInflater inflater = (LayoutInflater) this.context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+            convertView = inflater.inflate(android.R.layout.simple_expandable_list_item_1, null);
         }
-    }
 
+        TextView lblListHeader = (TextView) convertView.findViewById(android.R.id.text1);
+        lblListHeader.setText(headerTitle);
+
+        return convertView;
+    }
 
     @Override
-    public int getItemCount() {
-        return serviceList.size();
+    public View getChildView(int groupPosition, final int childPosition,
+                             boolean isLastChild, View convertView, ViewGroup parent) {
+        final String childText = (String) getChild(groupPosition, childPosition);
+
+        if (convertView == null) {
+            LayoutInflater inflater = (LayoutInflater) this.context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+            convertView = inflater.inflate(android.R.layout.simple_list_item_1, null);
+        }
+
+        TextView txtListChild = (TextView) convertView.findViewById(android.R.id.text1);
+        txtListChild.setText(childText); // Thông tin đặc tính (UUID, tên, properties, value)
+
+        return convertView;
     }
 
-    public static class ServiceViewHolder extends RecyclerView.ViewHolder {
-        TextView serviceName;
-        LinearLayout characteristicContainer;
-
-        public ServiceViewHolder(@NonNull View itemView) {
-            super(itemView);
-            serviceName = itemView.findViewById(R.id.service_name);
-            characteristicContainer = itemView.findViewById(R.id.characteristic_container);
-        }
+    @Override
+    public boolean isChildSelectable(int groupPosition, int childPosition) {
+        return true;
     }
 
 }
