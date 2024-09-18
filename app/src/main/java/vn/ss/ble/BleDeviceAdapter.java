@@ -2,23 +2,29 @@ package vn.ss.ble;
 
 import android.content.Context;
 import android.content.pm.PackageManager;
+
 import androidx.core.content.ContextCompat;
+
 import android.Manifest;
 import android.bluetooth.le.ScanResult;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+
 import java.util.List;
 
 public class BleDeviceAdapter extends RecyclerView.Adapter<BleDeviceAdapter.ViewHolder> {
 
+    private OnItemClickListener listener;
     private List<ScanResult> devices;
     private Context context;
 
-    public BleDeviceAdapter(List<ScanResult> devices, Context context) {
+    public BleDeviceAdapter(List<ScanResult> devices, Context context, OnItemClickListener listener) {
+        this.listener = listener;
         this.devices = devices;
         this.context = context;
     }
@@ -41,6 +47,8 @@ public class BleDeviceAdapter extends RecyclerView.Adapter<BleDeviceAdapter.View
 
             holder.deviceName.setText(deviceName != null ? deviceName : "Unknown Device");
             holder.deviceAddress.setText(deviceAddress);
+
+            holder.itemView.setOnClickListener(v -> listener.onItemClick(position));
         } else {
             // Nếu không có quyền, hiển thị thông báo mặc định
             holder.deviceName.setText("Permission required");
@@ -62,5 +70,9 @@ public class BleDeviceAdapter extends RecyclerView.Adapter<BleDeviceAdapter.View
             deviceName = itemView.findViewById(R.id.device_name);
             deviceAddress = itemView.findViewById(R.id.device_address);
         }
+    }
+
+    public interface OnItemClickListener {
+        void onItemClick(int position);
     }
 }
