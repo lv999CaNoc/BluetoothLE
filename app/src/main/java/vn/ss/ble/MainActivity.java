@@ -34,6 +34,7 @@ public class MainActivity extends AppCompatActivity {
     private static final int REQUEST_ENABLE_BT = 1;
     private static final int REQUEST_PERMISSION = 2;
     private static final long SCAN_PERIOD = 30000;      // 30 giây
+    private final Handler handler = new Handler();
     private BluetoothAdapter bluetoothAdapter;
     private BluetoothLeScanner bluetoothLeScanner;
     private HashSet<String> addressMap;
@@ -43,8 +44,10 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onScanResult(int callbackType, ScanResult result) {
             String deviceAddress = result.getDevice().getAddress();
-            if (ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
-                return;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) { // Android 12 (API 31)
+                if (ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+                    return;
+                }
             }
             String deviceName = result.getDevice().getName();
 
@@ -55,7 +58,6 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     };
-    private final Handler handler = new Handler();
     private Button btnScan;
 
     @Override
@@ -63,14 +65,18 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        RecyclerView recyclerView = findViewById(R.id.recycler_view);
+        RecyclerView recyclerView = findViewById(R.id.recycler_view_devices);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
         addressMap = new HashSet<>();
         scanResults = new ArrayList<>();
         bleDeviceAdapter = new BleDeviceAdapter(scanResults, this, position -> {
-
             Toast.makeText(this, "Clicked: " + position, Toast.LENGTH_SHORT).show();
+            ScanResult device = scanResults.get(position);
+
+            Intent intent = new Intent(this, DetailActivity.class);
+            intent.putExtra(DetailActivity.KEY_SCAN_RESULT, device);
+            startActivity(intent);
         });
         recyclerView.setAdapter(bleDeviceAdapter);
 
@@ -118,7 +124,6 @@ public class MainActivity extends AppCompatActivity {
                 startBleScan();
             }
         });
-
     }
 
     @Override
@@ -135,12 +140,14 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void startBleScan() {
-        // Yêu cầu quyền truy cập BLE
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
-            Log.i(TAG, "startBleScan: Yêu cầu quyền CONNECT và SCAN.");
-            ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.BLUETOOTH_CONNECT},
-                    REQUEST_PERMISSION);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) { // Android 12 (API 31)
+            // Yêu cầu quyền truy cập BLE
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+                Log.i(TAG, "startBleScan: Yêu cầu quyền CONNECT và SCAN.");
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.BLUETOOTH_CONNECT},
+                        REQUEST_PERMISSION);
+            }
         }
 
         bluetoothLeScanner = bluetoothAdapter.getBluetoothLeScanner();
@@ -160,12 +167,14 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void stopBleScan() {
-        // Yêu cầu quyền truy cập BLE
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
-            Log.i(TAG, "stopBleScan: Yêu cầu quyền CONNECT và SCAN.");
-            ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.BLUETOOTH_CONNECT},
-                    REQUEST_PERMISSION);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) { // Android 12 (API 31)
+            // Yêu cầu quyền truy cập BLE
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+                Log.i(TAG, "stopBleScan: Yêu cầu quyền CONNECT và SCAN.");
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.BLUETOOTH_CONNECT},
+                        REQUEST_PERMISSION);
+            }
         }
 
         btnScan.setText("SCAN");

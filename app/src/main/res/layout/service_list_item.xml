@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginHorizontal="10dp"
+    android:layout_marginBottom="20dp"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/service_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Service Name"
+        android:textSize="18sp" />
+
+    <!-- ListView để hiển thị các đặc tính khi nhấn vào dịch vụ -->
+    <LinearLayout
+        android:id="@+id/characteristic_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:visibility="gone"> <!-- Ẩn danh sách đặc tính ban đầu -->
+
+        <TextView
+            android:id="@+id/characteristic_item"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="8dp"
+            android:text="Characteristic Name"
+            android:textSize="16sp" />
+
+    </LinearLayout>
+
+</LinearLayout>
