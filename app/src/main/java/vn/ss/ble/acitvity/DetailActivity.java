@@ -1,4 +1,4 @@
-package vn.ss.ble;
+package vn.ss.ble.acitvity;
 
 import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothAdapter;
@@ -22,6 +22,9 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.List;
+
+import vn.ss.ble.R;
+import vn.ss.ble.adapter.ServiceAdapter;
 
 public class DetailActivity extends AppCompatActivity {
 

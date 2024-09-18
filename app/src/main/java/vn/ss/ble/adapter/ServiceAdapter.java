@@ -1,4 +1,4 @@
-package vn.ss.ble;
+package vn.ss.ble.adapter;
 
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattService;
@@ -16,6 +16,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import java.util.List;
 import java.util.UUID;
 
+import vn.ss.ble.R;
+
 public class ServiceAdapter extends RecyclerView.Adapter<ServiceAdapter.ServiceViewHolder> {
 
     private static final String TAG = "BLE_ServiceAdapter";
@@ -32,7 +34,7 @@ public class ServiceAdapter extends RecyclerView.Adapter<ServiceAdapter.ServiceV
     @NonNull
     @Override
     public ServiceViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(context).inflate(R.layout.service_list_item, parent, false);
+        View view = LayoutInflater.from(context).inflate(R.layout.item_services, parent, false);
         return new ServiceViewHolder(view);
 
     }

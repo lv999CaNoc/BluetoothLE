@@ -24,14 +24,14 @@
         android:theme="@style/Theme.BluetoothLE"
         tools:targetApi="31">
         <activity
-            android:name=".DetailActivity"
+            android:name=".acitvity.DetailActivity"
             android:exported="false">
             <meta-data
                 android:name="android.app.lib_name"
                 android:value="" />
         </activity>
         <activity
-            android:name=".MainActivity"
+            android:name=".acitvity.MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

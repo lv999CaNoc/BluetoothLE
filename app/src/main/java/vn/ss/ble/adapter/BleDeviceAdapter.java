@@ -1,4 +1,4 @@
-package vn.ss.ble;
+package vn.ss.ble.adapter;
 
 import android.Manifest;
 import android.bluetooth.le.ScanResult;
@@ -16,6 +16,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.List;
 
+import vn.ss.ble.R;
+
 public class BleDeviceAdapter extends RecyclerView.Adapter<BleDeviceAdapter.ViewHolder> {
 
     private OnItemClickListener listener;
@@ -31,7 +33,7 @@ public class BleDeviceAdapter extends RecyclerView.Adapter<BleDeviceAdapter.View
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.device_list_item, parent, false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_devices, parent, false);
         return new ViewHolder(view);
     }
 

@@ -1,4 +1,4 @@
-package vn.ss.ble;
+package vn.ss.ble.acitvity;
 
 import android.Manifest;
 import android.bluetooth.BluetoothAdapter;
@@ -27,6 +27,9 @@ import androidx.recyclerview.widget.RecyclerView;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+
+import vn.ss.ble.adapter.BleDeviceAdapter;
+import vn.ss.ble.R;
 
 public class MainActivity extends AppCompatActivity {
 

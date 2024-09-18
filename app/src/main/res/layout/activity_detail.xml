@@ -7,7 +7,7 @@
     android:layout_marginHorizontal="10dp"
     android:layout_marginBottom="20dp"
     android:orientation="vertical"
-    tools:context=".DetailActivity">
+    tools:context=".acitvity.DetailActivity">
 
     <TextView
         android:id="@+id/tv_name_device"
