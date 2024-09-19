@@ -24,6 +24,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.UUID;
 
 import vn.ss.ble.R;
 import vn.ss.ble.adapter.ServiceAdapter;
@@ -69,6 +70,44 @@ public class DetailActivity extends AppCompatActivity {
             super.onServicesDiscovered(gatt, status);
             if (status == BluetoothGatt.GATT_SUCCESS) {
                 displayGattServices(bluetoothGatt.getServices());
+            }
+        }
+
+        @Override
+        public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
+            if (status == BluetoothGatt.GATT_SUCCESS) {
+                Log.d(TAG, "Đọc characteristic thành công: " + characteristic.getUuid().toString());
+                String value = bytesToHex(characteristic.getValue());
+
+                // Tìm dịch vụ chứa characteristic này
+                String serviceUUID = characteristic.getService().getUuid().toString();
+                String characteristicUUID = characteristic.getUuid().toString();
+
+                runOnUiThread(() -> {
+                    // Cập nhật danh sách characteristic với giá trị mới
+                    for (int i = 0; i < listDataHeader.size(); i++) {
+                        String header = listDataHeader.get(i);
+                        if (header.contains(BluetoothGattServiceNames.getServiceName(serviceUUID))) {
+                            List<String> characteristics = listDataChild.get(header);
+                            if (characteristics != null) {
+                                for (int j = 0; j < characteristics.size(); j++) {
+                                    String child = characteristics.get(j);
+                                    if (child.contains(BluetoothGattCharacteristicNames.getCharacteristicName(characteristicUUID))) {
+                                        // Cập nhật giá trị trong danh sách characteristic
+                                        characteristics.set(j, "Characteristic: " + BluetoothGattCharacteristicNames.getCharacteristicName(characteristicUUID) +
+                                                "\nProperties: " + getPropertiesString(characteristic.getProperties()) +
+                                                "\nValue: " + value);
+                                        listDataChild.put(header, characteristics);
+                                        break;
+                                    }
+                                }
+                                break;
+                            }
+                        }
+                    }
+                    // Thông báo cho adapter rằng dữ liệu đã thay đổi
+                    serviceAdapter.notifyDataSetChanged();
+                });
             }
         }
     };
@@ -132,6 +171,7 @@ public class DetailActivity extends AppCompatActivity {
         return propertiesBuilder.toString();
     }
 
+    @SuppressLint("MissingPermission")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -155,6 +195,22 @@ public class DetailActivity extends AppCompatActivity {
 
         serviceAdapter = new ServiceAdapter(this, listDataHeader, listDataChild);
         expandableListView.setAdapter(serviceAdapter);
+
+
+        // Xử lý sự kiện nhấn vào characteristic
+        expandableListView.setOnChildClickListener((parent, v, groupPosition, childPosition, id) -> {
+            String characteristicUUID = listDataChild.get(listDataHeader.get(groupPosition)).get(childPosition).split("\n")[0].split(": ")[1];
+            BluetoothGattService service = bluetoothGatt.getServices().get(groupPosition);
+            BluetoothGattCharacteristic characteristic = service.getCharacteristic(UUID.fromString(characteristicUUID));
+
+            if (characteristic != null) {
+                // Yêu cầu đọc giá trị của characteristic
+                bluetoothGatt.readCharacteristic(characteristic);
+            }
+
+            return true;
+        });
+
 
         BluetoothManager bluetoothManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
         bluetoothAdapter = bluetoothManager.getAdapter();
