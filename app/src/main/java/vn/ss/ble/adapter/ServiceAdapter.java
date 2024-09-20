@@ -5,10 +5,13 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseExpandableListAdapter;
+import android.widget.ExpandableListView;
 import android.widget.TextView;
 
 import java.util.HashMap;
 import java.util.List;
+
+import vn.ss.ble.map.BluetoothGattServiceNames;
 
 public class ServiceAdapter extends BaseExpandableListAdapter {
 
@@ -59,14 +62,15 @@ public class ServiceAdapter extends BaseExpandableListAdapter {
 
     @Override
     public View getGroupView(int groupPosition, boolean isExpanded, View convertView, ViewGroup parent) {
-        String headerTitle = (String) getGroup(groupPosition);
+        String serviceUUID = (String) getGroup(groupPosition);
         if (convertView == null) {
             LayoutInflater inflater = (LayoutInflater) this.context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             convertView = inflater.inflate(android.R.layout.simple_expandable_list_item_1, null);
         }
 
         TextView lblListHeader = (TextView) convertView.findViewById(android.R.id.text1);
-        lblListHeader.setText(headerTitle);
+        String serviceName = BluetoothGattServiceNames.getServiceName(serviceUUID);
+        lblListHeader.setText(serviceName);
 
         return convertView;
     }
