@@ -36,8 +36,12 @@ public class MainActivity extends AppCompatActivity {
     private static final String TAG = "BLE_MainActivity";
     private static final int REQUEST_ENABLE_BT = 1;
     private static final int REQUEST_PERMISSION = 2;
+
+    // Stops scanning after 10 seconds.
     private static final long SCAN_PERIOD = 10000;      // 10 giây
     private final Handler handler = new Handler();
+    private boolean scanning;
+
     private BluetoothAdapter bluetoothAdapter;
     private BluetoothLeScanner bluetoothLeScanner;
     private HashSet<String> addressMap;
@@ -71,6 +75,7 @@ public class MainActivity extends AppCompatActivity {
 
         addressMap = new HashSet<>();
         scanResults = new ArrayList<>();
+
         bleDeviceAdapter = new BleDeviceAdapter(scanResults, this, position -> {
             Log.d(TAG, "onCreate: Clicked: " + position);
             ScanResult device = scanResults.get(position);
@@ -97,11 +102,32 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
                 // bắt đầu quét
                 Log.i(TAG, "onCreate: BluetoothLE đã được bật.");
-                startBleScan();
+                scanLeDevice();
             }
         });
+
+        bluetoothLeScanner = bluetoothAdapter.getBluetoothLeScanner();
     }
 
+    // Quét các thiết bị BLE, tự động dừng sau 10 giây
+    private void scanLeDevice() {
+        if (!scanning) {
+            // Stops scanning after a predefined scan period.
+            handler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    scanning = false;
+                    startBleScan();
+                }
+            }, SCAN_PERIOD);
+
+            scanning = true;
+            startBleScan();
+        } else {
+            scanning = false;
+            stopBleScan();
+        }
+    }
 
     private void startBleScan() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) { // Android 12 (API 31)
@@ -114,8 +140,6 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-        bluetoothLeScanner = bluetoothAdapter.getBluetoothLeScanner();
-
         addressMap.clear();
         scanResults.clear();
 
@@ -124,14 +148,16 @@ public class MainActivity extends AppCompatActivity {
         Toast.makeText(this, "Bắt đầu quét", Toast.LENGTH_SHORT).show();
         Log.i(TAG, "startBleScan: Bắt đầu quét!");
 
-        bluetoothLeScanner.startScan(scanCallback);
+        // Tạo danh sách các bộ lọc
+        // List<ScanFilter> filters = new ArrayList<>();
+        // ScanFilter filter;
+        // Thêm bộ lọc vào danh sách
+        // filters.add(filter);
+        // ScanSettings scanSettings;
+        // Bắt đầu quét với bộ lọc và cài đặt đã chỉ định
+        // bluetoothLeScanner.startScan(filters, scanSettings, leScanCallback);
 
-        handler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                stopBleScan();
-            }
-        }, SCAN_PERIOD);
+        bluetoothLeScanner.startScan(scanCallback);
     }
 
     private void stopBleScan() {
@@ -150,6 +176,14 @@ public class MainActivity extends AppCompatActivity {
         Toast.makeText(this, "Dừng quét", Toast.LENGTH_SHORT).show();
 
         bluetoothLeScanner.stopScan(scanCallback);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (scanning){
+            scanLeDevice(); // stop scan
+        }
     }
 
     @Override

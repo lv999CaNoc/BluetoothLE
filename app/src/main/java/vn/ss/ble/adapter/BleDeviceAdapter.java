@@ -51,9 +51,20 @@ public class BleDeviceAdapter extends RecyclerView.Adapter<BleDeviceAdapter.View
 
         String deviceName = device.getDevice().getName();
         String deviceAddress = device.getDevice().getAddress();
+        int deviceRssi = device.getRssi();
+
+//        Cài đặt icon độ mạnh của sóng
+//        if (rssi > -50) {
+//            holder.signalIcon.setImageResource(R.drawable.ic_signal_strong);
+//        } else if (rssi > -70) {
+//            holder.signalIcon.setImageResource(R.drawable.ic_signal_medium);
+//        } else {
+//            holder.signalIcon.setImageResource(R.drawable.ic_signal_weak);
+//        }
 
         holder.deviceName.setText(deviceName != null ? deviceName : "Unknown Device");
         holder.deviceAddress.setText(deviceAddress);
+        holder.deviceRssi.setText("RSSI: "+deviceRssi);
 
         holder.itemView.setOnClickListener(v -> listener.onItemClick(position));
     }
@@ -70,11 +81,13 @@ public class BleDeviceAdapter extends RecyclerView.Adapter<BleDeviceAdapter.View
     static class ViewHolder extends RecyclerView.ViewHolder {
         TextView deviceName;
         TextView deviceAddress;
+        TextView deviceRssi;
 
         ViewHolder(View itemView) {
             super(itemView);
             deviceName = itemView.findViewById(R.id.device_name);
             deviceAddress = itemView.findViewById(R.id.device_address);
+            deviceRssi = itemView.findViewById(R.id.device_rssi);
         }
     }
 }
