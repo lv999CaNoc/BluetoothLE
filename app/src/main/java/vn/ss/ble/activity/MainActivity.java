@@ -1,4 +1,4 @@
-package vn.ss.ble.acitvity;
+package vn.ss.ble.activity;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
@@ -80,8 +80,8 @@ public class MainActivity extends AppCompatActivity {
             Log.d(TAG, "onCreate: Clicked: " + position);
             ScanResult device = scanResults.get(position);
 
-            Intent intent = new Intent(this, DetailActivity.class);
-            intent.putExtra(DetailActivity.KEY_SCAN_RESULT, device);
+            Intent intent = new Intent(this, DeviceControlActivity.class);
+            intent.putExtra(DeviceControlActivity.KEY_DEVICE_ADDRESS, device.getDevice().getAddress());
             startActivity(intent);
         });
         recyclerView.setAdapter(bleDeviceAdapter);
@@ -102,31 +102,13 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
                 // bắt đầu quét
                 Log.i(TAG, "onCreate: BluetoothLE đã được bật.");
-                scanLeDevice();
+                if (!scanning) {
+                    startBleScan();
+                }
             }
         });
 
         bluetoothLeScanner = bluetoothAdapter.getBluetoothLeScanner();
-    }
-
-    // Quét các thiết bị BLE, tự động dừng sau 10 giây
-    private void scanLeDevice() {
-        if (!scanning) {
-            // Stops scanning after a predefined scan period.
-            handler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    scanning = false;
-                    startBleScan();
-                }
-            }, SCAN_PERIOD);
-
-            scanning = true;
-            startBleScan();
-        } else {
-            scanning = false;
-            stopBleScan();
-        }
     }
 
     private void startBleScan() {
@@ -140,24 +122,36 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-        addressMap.clear();
-        scanResults.clear();
+        if (!scanning) {
+            addressMap.clear();
+            scanResults.clear();
 
-        btnScan.setText("SCANNING...");
-        btnScan.setEnabled(false);
-        Toast.makeText(this, "Bắt đầu quét", Toast.LENGTH_SHORT).show();
-        Log.i(TAG, "startBleScan: Bắt đầu quét!");
+            btnScan.setText("SCANNING...");
+            btnScan.setEnabled(false);
 
-        // Tạo danh sách các bộ lọc
-        // List<ScanFilter> filters = new ArrayList<>();
-        // ScanFilter filter;
-        // Thêm bộ lọc vào danh sách
-        // filters.add(filter);
-        // ScanSettings scanSettings;
-        // Bắt đầu quét với bộ lọc và cài đặt đã chỉ định
-        // bluetoothLeScanner.startScan(filters, scanSettings, leScanCallback);
+            Log.d(TAG, "startBleScan: bắt đầu quét!");
+            Toast.makeText(this, "Bắt đầu quét", Toast.LENGTH_SHORT).show();
 
-        bluetoothLeScanner.startScan(scanCallback);
+            // Tạo danh sách các bộ lọc để quét
+            // List<ScanFilter> filters = new ArrayList<>();
+            // ScanFilter filter;
+            // Thêm bộ lọc vào danh sách
+            // filters.add(filter);
+            // ScanSettings scanSettings;
+            // Bắt đầu quét với bộ lọc và cài đặt đã chỉ định
+            // bluetoothLeScanner.startScan(filters, scanSettings, leScanCallback);
+
+            // Stops scanning after a predefined scan period.
+            handler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    stopBleScan();
+                }
+            }, SCAN_PERIOD);
+
+            scanning = true;
+            bluetoothLeScanner.startScan(scanCallback);
+        }
     }
 
     private void stopBleScan() {
@@ -170,20 +164,21 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-        btnScan.setText("SCAN");
-        btnScan.setEnabled(true);
-        Log.i(TAG, "stopBleScan: Dừng quét!");
-        Toast.makeText(this, "Dừng quét", Toast.LENGTH_SHORT).show();
+        if (scanning) {
+            btnScan.setText("SCAN");
+            btnScan.setEnabled(true);
+            Log.d(TAG, "stopBleScan: Dừng quét!");
+            Toast.makeText(this, "Dừng quét", Toast.LENGTH_SHORT).show();
 
-        bluetoothLeScanner.stopScan(scanCallback);
+            scanning = false;
+            bluetoothLeScanner.stopScan(scanCallback);
+        }
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        if (scanning){
-            scanLeDevice(); // stop scan
-        }
+        stopBleScan(); // stop scan
     }
 
     @Override

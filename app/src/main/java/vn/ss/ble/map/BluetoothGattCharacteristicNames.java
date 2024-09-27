@@ -35,4 +35,9 @@ public class BluetoothGattCharacteristicNames {
         String characteristicName = characteristicNames.get(uuid.toLowerCase());
         return (characteristicName != null) ? characteristicName : "Unknown Characteristic";
     }
+
+    public static boolean isHeartRateMeasurement(String uuid){
+        String characteristicName = characteristicNames.get(uuid.toLowerCase());
+        return characteristicName.equals("Heart Rate Measurement");
+    }
 }

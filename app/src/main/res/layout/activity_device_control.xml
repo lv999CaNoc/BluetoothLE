@@ -7,23 +7,23 @@
     android:layout_marginHorizontal="10dp"
     android:layout_marginBottom="20dp"
     android:orientation="vertical"
-    tools:context=".acitvity.DetailActivity">
+    tools:context=".activity.DeviceControlActivity">
 
     <TextView
-        android:id="@+id/tv_name_device"
+        android:id="@+id/device_control_tv_name_device"
         android:textAlignment="center"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Name device..."/>
 
     <Button
-        android:id="@+id/btn_connect_device"
+        android:id="@+id/device_control_btn_connect_device"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="CONNECT"/>
 
     <ExpandableListView
-        android:id="@+id/expandable_lv_services"
+        android:id="@+id/device_control_expandable_lv_services"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         />
